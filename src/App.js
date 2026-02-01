@@ -1,25 +1,33 @@
-import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import LoginPage from "./Login_&_Register/LoginPage";
+import RegisterPage from "./Login_&_Register/RegisterPage";
+import AddProduct from './Product/AddProduct';
+import Index from './IndexFile/Index';
+import Dashboard from './Dashboard';
+import AddCategory from './Category/Add Category';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <>
+      <Router>
+        <Switch>
+          <Route exact path="/log-in" component={LoginPage} />
+          <Route exact path="/register" component={RegisterPage} />
+
+          <Route>
+            <Index>
+              <Switch>
+                <Route exact path="/" component={Dashboard} />
+                <Route exact path="/product" component={AddProduct} />
+                <Route exact path="/category" component={AddCategory} />
+              </Switch>
+            </Index>
+          </Route>
+        </Switch>
+      </Router>
+    </>
+  )
 }
 
 export default App;
