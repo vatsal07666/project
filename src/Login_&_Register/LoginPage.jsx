@@ -45,8 +45,8 @@ const LoginPage = () => {
     }
 
     return(
-        <Box className="login-container">
-            <Paper elevation={10} sx={{ width: "100%", maxWidth: 320, p: {xs: 3, md: 4}, borderRadius: 3 }}>
+        <Box className="login-container" sx={{ px: {xs: 2, md: 0}}}>
+            <Paper elevation={10} sx={{ width: "100%", maxWidth: 320, p: { xs: 2.5, md: 4 }, borderRadius: 3 }}>
                 <Typography variant={isMobile ? "h5" : "h4"} align="center" fontWeight={700}>
                     Login
                 </Typography>

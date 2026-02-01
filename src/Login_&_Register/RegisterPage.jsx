@@ -63,8 +63,8 @@ const RegisterPage = () => {
     }
 
     return(
-        <Box className="register-container">
-            <Paper elevation={10} sx={{ width: "100%", maxWidth: 320, p: {xs: 3, md: 4}, borderRadius: 3 }}>
+        <Box className="register-container"  sx={{ px: {xs: 4.5, md: 0}}}>
+            <Paper elevation={10} sx={{ width: "100%", maxWidth: 320, p: { xs: 2.5, md: 4 }, borderRadius: 3 }}>
                 <Typography variant={isMobile ? "h5" : "h4"} align="center" fontWeight={700}>
                     Register
                 </Typography>
