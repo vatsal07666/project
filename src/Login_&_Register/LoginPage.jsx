@@ -1,6 +1,6 @@
 import { Field, Form, Formik } from "formik";
 import { Link } from "react-router-dom";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import * as Yup from 'yup';
 import { useSnackbar } from "./SnackbarContext";
@@ -9,6 +9,9 @@ import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 const LoginPage = () => {
     const { ShowSnackbar } = useSnackbar();
     const history = useHistory();
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));     
 
     const initialValues = {username: '', password: ''};
 
@@ -42,37 +45,48 @@ const LoginPage = () => {
     }
 
     return(
-        <Box className="login-container">
-            <Formik initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {({errors, touched}) => (
-                    <Form className="login-box">
-                        <Box sx={{textAlign: "center"}}><h1>Login</h1></Box>
-                        
-                        <label htmlFor="username">Username </label>
-                        <Field name="username" id="username" placeholder="Enter Username" />
-                        {errors.username && touched.username && <div style={{color: "#ff0000", marginTop: "5px"}}>{errors.username}</div>}
-                        <br /><br />
+        <Box className="login-container" sx={{ p: {xs: 2, md: 0}}}>
+            <Paper elevation={10} sx={{ width: "100%", maxWidth: 320, p: {xs: 3, md: 4}, borderRadius: 3 }}>
+                <Typography variant={isMobile ? "h5" : "h4"} align="center" fontWeight={700}>
+                    Login
+                </Typography>
+            
+                <Formik initialValues={initialValues}
+                    validationSchema={validationSchema}
+                    onSubmit={handleSubmit}
+                >
+                    {({errors, touched}) => (
+                        <Form className="login-box">
+                            <label htmlFor="username">Username </label>
+                            <Field name="username" id="username" placeholder="Enter Username" />
+                            {errors.username && touched.username && <div style={{color: "#ff0000", marginTop: "5px"}}>{errors.username}</div>}
+                            <br /><br />
 
-                        <label htmlFor="password">Password </label>
-                        <Field name="password" id="password" type="password" placeholder="Enter Password" />
-                        {errors.password && touched.password && <div style={{color: "#ff0000", marginTop: "5px"}}>{errors.password}</div>}
-                        <br /><br />
+                            <label htmlFor="password">Password </label>
+                            <Field name="password" id="password" type="password" placeholder="Enter Password" />
+                            {errors.password && touched.password && <div style={{color: "#ff0000", marginTop: "5px"}}>{errors.password}</div>}
+                            <br /><br />
 
-                        <Button type="submit" variant="contained">Log In</Button>
+                            <Button type="submit" fullWidth size="large" variant="contained" sx={{
+                                    mt: 3, py: 1.3, background: "#1e293b", "&:hover": { background: "#0f172a" }
+                                }}
+                            >
+                                Log In
+                            </Button>
 
-                        <Box sx={{ textAlign: "center", display:"flex", justifyContent: "center", 
-                                alignItems: "center", gap: 1
-                            }}
-                        >
-                            <p>Don't have An Account?</p>
-                            <Link to="/register" className="router-link"> Register </Link>
-                        </Box>
-                    </Form>
-                )}
-            </Formik>
+                            <Box sx={{ mt: 3, display:"flex", justifyContent: "center", 
+                                    alignItems: "center", gap: 1, flexWrap: "wrap"
+                                }}
+                            >
+                                <Typography variant="body2">
+                                    Don&apos;t have an account?
+                                </Typography>
+                                <Link to="/register" className="router-link"> Register </Link>
+                            </Box>
+                        </Form>
+                    )}
+                </Formik>
+            </Paper>
         </Box>
     )
 }
