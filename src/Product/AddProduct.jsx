@@ -99,8 +99,6 @@ const AddProduct = () => {
 
     // Patch Method
     const patchData = (id, values) => {
-        // const val = {productName: values.productName, quantity: values.quantity, price: values.price}
-
         axios.patch(`https://generateapi.techsnack.online/api/product/${id}`, values, {
             headers: { Authorization: token }
         })
