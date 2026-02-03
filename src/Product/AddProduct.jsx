@@ -17,14 +17,15 @@ import { DataContext } from "../Context/ContextProvider";
 const initialValues = {productName: '', sku: '', category: '', supplier: '', stock: '', costPrice: '', sellingPrice: ''};
 
 const AddProduct = () => {
-    const [data, setData] = useState([]);
+    const { products, setProducts, categories, suppliers } = useContext(DataContext);
+    
     const [editId, setEditId] = useState(null);
     const [formValues, setFormValues] = useState(initialValues);
     const [searchItem, setSearchItem] = useState("");
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [dailogOpen, setDailogOpen] = useState(false);
 
-    const { categories, suppliers } = useContext(DataContext);
 
     const { ShowSnackbar } = useSnackbar();
 
@@ -47,7 +48,7 @@ const AddProduct = () => {
         })
         .then((res) => {
             console.log("GET response: ", res.data);
-            setData(res.data.Data);
+            setProducts(res.data.Data);
         })
         .catch((err) => {
             console.error("GET error: ", err);
@@ -57,6 +58,7 @@ const AddProduct = () => {
     // Load Data
     useEffect(() => {
         getData();
+        // eslint-disable-next-line
     }, [])
 
     // Post Method
@@ -72,7 +74,6 @@ const AddProduct = () => {
             console.log("POST response: ", res.data);
             if(res.status === 200 || res.status === 204){
                 getData();
-                ShowSnackbar("Data Added Successfully !", "success");
             }
         })
         .catch((err) => {
@@ -88,7 +89,7 @@ const AddProduct = () => {
         .then((res) => {
             console.log("DELETE response: ", res.status);
             if(res.status === 200 || res.status === 204){
-                setData(data.filter((_,i) => i !== index));
+                setProducts(products.filter((_,i) => i !== index));
                 ShowSnackbar("Data Deleted Successfully !", "error");
             }
         })
@@ -99,8 +100,6 @@ const AddProduct = () => {
 
     // Patch Method
     const patchData = (id, values) => {
-        // const val = {productName: values.productName, quantity: values.quantity, price: values.price}
-
         axios.patch(`https://generateapi.techsnack.online/api/product/${id}`, values, {
             headers: { Authorization: token }
         })
@@ -109,8 +108,6 @@ const AddProduct = () => {
             if(res.status === 200 || res.status === 204){
                 getData();
                 setEditId(null);
-                ShowSnackbar("Data Updated Successfully !", "success");
-                handleRefresh();
             }
         })
         .catch((err) => {
@@ -120,8 +117,6 @@ const AddProduct = () => {
 
     // Submit Action
     const handleSubmit = (values, {resetForm}) => {
-        if (document.activeElement) document.activeElement.blur();
-        
         if(editId !== null){
             patchData(editId, values);
         } else {
@@ -130,13 +125,13 @@ const AddProduct = () => {
         resetForm();
         setEditId(null);
         setOpen(false);
-        setFormValues(initialValues)
+        setFormValues(initialValues);
+        ShowSnackbar(editId !== null ? "Data Updated Successfully !" : "Data Added Successfully !", "success");
+        handleRefresh();
     }
 
     // Edit/Update Action
     const handleEdit = (item) => {
-        if (document.activeElement) document.activeElement.blur();
-        
         setEditId(item._id);
         setFormValues({
             productName: item.productName, sku: item.sku, category: item.category, supplier: item.supplier,
@@ -146,12 +141,11 @@ const AddProduct = () => {
     }
 
     // Cancle Action
-    const handleCancle = () => {
-        if (document.activeElement) document.activeElement.blur();
-
+    const handleCancle = (resetForm) => {
         setOpen(false); 
         setEditId(null);
         setFormValues(initialValues);
+        resetForm();
     }
 
     // Referesh Data
@@ -164,9 +158,18 @@ const AddProduct = () => {
         })
     }
 
+    const closeDailog = () => {
+        setDailogOpen(false);
+    }
+
+    const handleDailog = (item, index) => {
+        setDailogOpen(false);
+        deleteData(item._id, index);
+    }
+
     // Search Logic
     const searchTerm = searchItem?.toLowerCase() || "";
-    const filteredProduct = (data || []).filter((item) => (item.productName || "").toLowerCase().includes(searchTerm));
+    const filteredProduct = (products || []).filter((item) => (item.productName || "").toLowerCase().includes(searchTerm));
 
     return(
         <Box component={Paper} sx={{p:3, borderRadius: 2, mt: 10}}>
@@ -182,7 +185,7 @@ const AddProduct = () => {
             </Box>
 
             {/* Product Form */}
-            <Dialog open={open} sx={{ zIndex: 2000 }} maxWidth="md" fullWidth >
+            <Dialog open={open} sx={{ zIndex: 2000 }} maxWidth="md" fullWidth disableRestoreFocus>
                 <DialogTitle sx={{ fontWeight: 700 }}>
                     {editId !== null ? "Edit Product" : "Add New Product"}
                 </DialogTitle>
@@ -195,7 +198,7 @@ const AddProduct = () => {
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
-                        {({errors, touched, isSubmitting, isValid, dirty}) => (
+                        {({errors, touched, isSubmitting, isValid, dirty, resetForm}) => (
                             <Form>
                                 {/* Product & SKU */}
                                 <Box sx={{ display: "flex", gap: 3, mb: 3 }}>
@@ -218,7 +221,7 @@ const AddProduct = () => {
                                         <label htmlFor="category">Category</label>
                                         <Field name= "category" id= "category" as="select">
                                             <option value="" hidden>Select Category</option>
-                                            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                                            {(categories || []).map((cat) => <option key={cat._id} value={cat.categoryName}>{cat.categoryName}</option>)}
                                         </Field>
                                         {errors.category && touched.category && <div style={{color: "#ff0000"}}>{errors.category}</div>}
                                     </Box>
@@ -256,7 +259,7 @@ const AddProduct = () => {
 
                                 {/* Cancle & Submit Button */}
                                 <DialogActions>
-                                    <Button onClick={handleCancle} sx={{ color: "#1e293b" }}>
+                                    <Button onClick={() => handleCancle(resetForm)} sx={{ color: "#1e293b" }}>
                                         Cancel
                                     </Button>
                                     
@@ -363,11 +366,39 @@ const AddProduct = () => {
                                                         background:"#fff", color: "#ef4444", transition: "0.3s ease-in-out",
                                                         "&:hover": { background: "#dc2626", color:"#fff" }
                                                     }}
-                                                    onClick={() => deleteData(item._id, index)}
+                                                    onClick={() => setDailogOpen(true)}
                                                 >
                                                     <RiDeleteBin6Line />
                                                 </IconButton>
                                             </Tooltip>
+
+                                            {/* Delete Button Dailog */}
+                                            <Dialog open={dailogOpen} fullWidth onClose={closeDailog} disableRestoreFocus>
+                                                <DialogTitle id="alert-dialog-title"> 
+                                                    Confirm Delete By Clicking Delete! 
+                                                </DialogTitle>
+                                                
+                                                <DialogActions>
+                                                   <Button onClick={closeDailog} variant="contained" 
+                                                        sx={{color: "#1e293b", background: "#fff", 
+                                                            '&:hover': { boxShadow: "0 0 0 2px rgba(0, 0, 0, 0.5)" }
+                                                        }}
+                                                    >
+                                                        Cancle
+                                                    </Button>
+
+                                                    <Button variant="contained" className="agree-button" 
+                                                        onClick={() => handleDailog(item, index)}
+                                                        sx={{background: "#ef4444", color: "#fff", transition: "0.2s ease-in-out",
+                                                            '&:hover': {background: "#fff", color: "#ff0000", 
+                                                                boxShadow: "0 0 2px rgba(255, 0, 0, 1)"
+                                                            }
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </DialogActions>    
+                                            </Dialog>
 
                                             {/* Edit Button */}
                                             <Tooltip title="Edit" component={Paper}

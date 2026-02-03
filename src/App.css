@@ -140,3 +140,7 @@ label[for="categoryName"], label[for="description"], label[for="status"]{
     letter-spacing: 0.1cqmin;
     font-weight: 600;
 }
+
+#alert-dialog-title{
+    font-size: large;
+}

@@ -17,7 +17,8 @@ import { DataContext } from "../Context/ContextProvider";
 const initialValues = {categoryName: '', description: '', status: ''};
 
 const AddCategory = () => {
-    const [data, setData] = useState([]);
+    const { categories, setCategories } = useContext(DataContext);
+    
     const [editId, setEditId] = useState(null);
     const [formValues, setFormValues] = useState(initialValues);
     const [open, setOpen] = useState(false);
@@ -25,7 +26,6 @@ const AddCategory = () => {
     const [loading, setLoading] = useState(false);
     const [searchItem, setSearchItem] = useState("");
 
-    const { categories } = useContext(DataContext);
     const { ShowSnackbar } = useSnackbar();
 
     const validationSchema = Yup.object({
@@ -45,7 +45,7 @@ const AddCategory = () => {
         })
         .then((res) => {
             console.log("GET response: ", res.data);
-            setData(res.data.Data);
+            setCategories(res.data.Data);
         })
         .catch((err) => {
             console.error("GET error: ", err);
@@ -55,6 +55,7 @@ const AddCategory = () => {
     // Load Data
     useEffect(() => {
         getData();
+        // eslint-disable-next-line
     }, [])
 
     // Post Method
@@ -68,7 +69,6 @@ const AddCategory = () => {
             console.log("POST response: ", res.data);
             if(res.status === 200 || res.status === 204){
                 getData();
-                ShowSnackbar("Data Added Successfully !", "success");
             }
         })
         .catch((err) => {
@@ -84,10 +84,10 @@ const AddCategory = () => {
         .then((res) => {
             console.log("DELETE response: ", res.status);
             if(res.status === 200 || res.status === 204){
-                setData((data) => data.filter((_, i) => i !== index));
+                setCategories((category) => category.filter((_, i) => i !== index));
             }
-            ShowSnackbar("Data Deleted Successfully !", "error");
             handleRefresh();
+            ShowSnackbar("Data Deleted Successfully !", "error");
         })
         .catch((err) => {
             console.error("DELETE error: ", err);
@@ -104,8 +104,6 @@ const AddCategory = () => {
             if(res.status === 200 || res.status === 204){
                 getData();
                 setEditId(null);
-                ShowSnackbar("Data Updated successfully !", "success");
-                handleRefresh();
             }
         })
         .catch((err) => {
@@ -114,8 +112,15 @@ const AddCategory = () => {
      }
 
     //  Submit Action
-    const handleSubmit = (values, { resetForm }) => {
-        if (document.activeElement) document.activeElement.blur();
+    const handleSubmit = (values, { resetForm, setFieldError }) => {
+        const newCategory = values.categoryName?.toLowerCase();
+
+        const isDuplicate = (categories || []).some((cat) => cat.categoryName?.toLowerCase() === newCategory);
+
+        if(isDuplicate && editId === null){
+            setFieldError("categoryName", "Category already exists");
+            return; 
+        }
 
         if(editId !== null){
             patchData(editId, values);
@@ -126,22 +131,23 @@ const AddCategory = () => {
         setEditId(null);
         setOpen(false);
         setFormValues(initialValues);
+        ShowSnackbar(editId !== null ? "Data Updated Successfully !" : "Data Added Successfully !", "success");
+        handleRefresh();
     }
 
     // Edit Action
     const handleEdit = (item) => {
-        if (document.activeElement) document.activeElement.blur();
-
         setEditId(item._id);
         setFormValues({ categoryName: item.categoryName, description: item.description, status: item.status });
         setOpen(true);
     }
 
     // Cancle Action
-    const handleCancle = () => {
-        if (document.activeElement) document.activeElement.blur();
-
+    const handleCancle = (resetForm) => {
         setOpen(false);
+        setEditId(null);
+        setFormValues(initialValues);
+        resetForm();
     }
 
     // Refresh Data
@@ -154,9 +160,18 @@ const AddCategory = () => {
         })
     }
 
+    const closeDailog = () => {
+        setDailogOpen(false);
+    }
+
+    const handleDailog = (item, index) => {
+        setDailogOpen(false);
+        deleteData(item._id, index);
+    }
+
     // Search Logic
     const searchTerm = searchItem?.toLowerCase() || "";
-    const filteredcategory = (data || []).filter((item) => (item.categoryName || "")?.toLowerCase().includes(searchTerm));
+    const filteredcategory = (categories || []).filter((item) => (item.categoryName || "")?.toLowerCase().includes(searchTerm));
 
     return(
         <Box component={Paper} sx={{p:3, borderRadius: 2, mt: 10}}>
@@ -172,7 +187,7 @@ const AddCategory = () => {
             </Box>
 
             {/* Category Form */}
-            <Dialog open={open} sx={{ zIndex: 2000 }} maxWidth="md" fullWidth >
+            <Dialog open={open} sx={{ zIndex: 2000 }} maxWidth="md" fullWidth disableRestoreFocus>
                 <DialogTitle sx={{ fontWeight: 700 }} >
                     {editId !== null ? "Edit Category" : "Add New Category"}
                 </DialogTitle>
@@ -184,16 +199,13 @@ const AddCategory = () => {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({errors, touched, isSubmitting, dirty, isValid}) => (
+                        {({errors, touched, isValid, resetForm}) => (
                             <Form>
                                 {/* Category Name & Status */}
                                 <Box sx={{display: "flex", gap: 3, mb: 3}}>
                                     <Box sx={{display: "flex", flexDirection: "column", gap: 1, flex: 1}}>
                                         <label htmlFor="categoryName">Category Name</label>
-                                        <Field name= "categoryName" id= "category" as="select">
-                                            <option value="" hidden>Select Category</option>
-                                            {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-                                        </Field>
+                                        <Field name= "categoryName" id= "categoryName" placeholder="Enter Category" />
                                         {errors.categoryName && touched.categoryName && <div style={{color: "#ff0000"}}>{errors.categoryName}</div>}
                                     </Box>
 
@@ -218,11 +230,11 @@ const AddCategory = () => {
 
                                 {/* Cancle & Submit Button */}
                                 <DialogActions>
-                                    <Button onClick={handleCancle} sx={{ color: "#1e293b" }}>Cancle</Button>
+                                    <Button onClick={() => handleCancle(resetForm)} sx={{ color: "#1e293b" }}>Cancle</Button>
 
                                     <Button type="submit" variant="contained"
                                         sx={{ background: "#1e293b", "&:hover": { background: "#0f172a" } }}
-                                        disabled={isSubmitting || !isValid || !dirty}
+                                        disabled={!isValid}
                                     >
                                         Submit
                                     </Button>
@@ -322,28 +334,33 @@ const AddCategory = () => {
                                                             background:"#fff", color: "#ef4444", transition: "0.3s ease-in-out",
                                                             "&:hover": { background: "#dc2626", color:"#fff" }
                                                         }}
-                                                        // onClick={() => deleteData(item._id, index)}
                                                         onClick={() => setDailogOpen(true)}
                                                     >
                                                         <RiDeleteBin6Line />
                                                     </IconButton>
-                                                    <Dialog
-                                                        open={dailogOpen}
-                                                        onClose={() => setDailogOpen(false)}
-                                                        aria-labelledby="alert-dialog-title"
-                                                        aria-describedby="alert-dialog-description"
-                                                    >
-                                                        <DialogTitle id="alert-dialog-title">
-                                                            Are You Sure You Want To Delete This?
-                                                        </DialogTitle>
-                                                        <DialogActions>
-                                                            <Button onClick={() => setDailogOpen(false)}>Disagree</Button>
-                                                            <Button onClick={() => {deleteData(item._id, index); setDailogOpen(false)}} autoFocus>
-                                                                Agree
-                                                            </Button>
-                                                        </DialogActions>    
-                                                    </Dialog>
                                                 </Tooltip>
+                                                <Dialog open={dailogOpen} onClose={closeDailog} fullWidth disableRestoreFocus sx={{backfaceVisibility: "revert-layer"}}>
+                                                    <DialogTitle id="alert-dialog-title"> Confirm Delete By Clicking Delete ! </DialogTitle>
+                                                    <DialogActions>
+                                                        <Button onClick={closeDailog} variant="contained" sx={{color: "#1e293b", background: "#fff", 
+                                                                '&:hover': { boxShadow: "0 0 0 2px rgba(0, 0, 0, 0.5)" }
+                                                            }}
+                                                        >
+                                                            Cancle
+                                                        </Button>
+
+                                                        <Button variant="contained" className="agree-button" 
+                                                            onClick={() => handleDailog(item, index)}
+                                                            sx={{background: "#ef4444", color: "#fff", transition: "0.2s ease-in-out",
+                                                                '&:hover': {background: "#fff", color: "#ff0000", 
+                                                                    boxShadow: "0 0 2px rgba(255, 0, 0, 1)"
+                                                                }
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </DialogActions>    
+                                                </Dialog>
 
                                                 <Tooltip title="Edit" component={Paper}
                                                     slotProps={{

@@ -105,17 +105,10 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 const Items = [
-    {
-        name: "Dashboard", icon: <TbLayoutDashboardFilled />, label: "Dashboard", to: "/"
-    },
-    {
-        name: "Product", icon: <FaBoxes />, label: "Add Product", to: "/product"
-    },
-    {
-        name: "Category", icon: <MdCategory />, label: "Add Category", to: "/category"
-    },
+    { name: "Dashboard", icon: <TbLayoutDashboardFilled />, label: "Dashboard", to: "/" },
+    { name: "Product", icon: <FaBoxes />, label: "Add Product", to: "/product" },
+    { name: "Category", icon: <MdCategory />, label: "Add Category", to: "/category" },
 ]
-
 
 export default function Index({children}) {
     const theme = useTheme();
@@ -148,11 +141,8 @@ export default function Index({children}) {
             <CssBaseline />
             <AppBar position="fixed" open={open} sx={{background: "#1e293b"}}>
                 <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={handleDrawerOpen}
-                        edge="start"
+                    <IconButton color="inherit" aria-label="open drawer"
+                        onClick={handleDrawerOpen} edge="start"
                         sx={[ { marginRight: 5 }, open && { display: 'none' } ]}
                     >
                         <MenuIcon />
@@ -213,7 +203,7 @@ export default function Index({children}) {
                 ))}
             </Drawer>
 
-            <Box component="main" sx={{ height: "90vh", flexGrow: 1, p: 3}}>
+            <Box component="main" sx={{ minHeight: "100vh", flexGrow: 1, p: 3, background: "#f5f7fa"}}>
                 {children}
             </Box>
         </Box>
