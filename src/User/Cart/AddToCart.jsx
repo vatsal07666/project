@@ -2,6 +2,7 @@ import { CartContext } from "../../Context/CartProvider";
 import { Box, Button, Card, CardContent, Container, Grid, IconButton, Paper, Toolbar, Typography } from "@mui/material";
 import { useContext } from "react";
 import { FiPlus, FiMinus } from "react-icons/fi";
+import LoadRazorpay from "../../Payment/LoadRazorpay";
 
 const Cart = () => {
     const { cart, increaseQty, decreaseQty, removeFromCart } = useContext(CartContext);
@@ -14,6 +15,42 @@ const Cart = () => {
         (acc, item) => acc + item.sellingPrice * item.quantity,
         0
     );
+
+    const handleCheckout = () => {
+        LoadRazorpay().then((loaded) => {
+            if (!loaded) {
+            alert("Razorpay SDK failed to load");
+            return;
+            }
+
+            const options = {
+            key: "rzp_test_SEIgekUY4O2ZUn", // TEST PUBLIC KEY ONLY
+            amount: subtotal * 100,   // INR → paise
+            currency: "INR",
+            name: "My Store",
+            description: "Cart Payment",
+
+            handler: function (response) {
+                console.log("Payment ID:", response.razorpay_payment_id);
+                alert("Payment Successful (TEST MODE)");
+            },
+
+            prefill: {
+                name: "Test User",
+                email: "test@example.com",
+                contact: "9999999999",
+            },
+
+            theme: {
+                color: "#1e293b",
+            },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        });
+    };
+
 
     return (
         <>
@@ -118,16 +155,19 @@ const Cart = () => {
                             <Button variant="contained" sx={{ background: "#1e293b", textTransform: "none",
                                     px: 4, "&:hover": { background: "#0f172a" }
                                 }}
-                                disabled={cart.length === 0}
+                                disabled={cart.length === 0} onClick={handleCheckout}
                             >
                                 Proceed to Checkout
                             </Button>
                         </Box>
                     </Container>
                 </Box>
+                
             </Box>
+            
         </>
     );
 };
+
 
 export default Cart;
