@@ -6,8 +6,9 @@ export const DataContext = createContext();
 export const ContextProvider = ({children}) => {
     const [categories, setCategories] = useState([]);
     const [products, setProducts] = useState([]);
-
     const suppliers = ["Global Electronics Ltd", "Home Supply", "Fashion World Inc", "SportsPro Equipment"];
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Tokens
     const productToken = "w4AkMdTjMm7CLvTY";
@@ -37,7 +38,9 @@ export const ContextProvider = ({children}) => {
     }, [])
 
     return(
-        <DataContext.Provider value={{ products, setProducts, categories, setCategories, suppliers }}>
+        <DataContext.Provider value={{ products, setProducts, categories, setCategories, suppliers, isDrawerOpen,
+            setIsDrawerOpen
+        }}>
             {children}
         </DataContext.Provider>
     )

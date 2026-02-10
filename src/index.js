@@ -4,8 +4,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom/cjs/react-router-dom.min';
-import { SnackbarProvider } from './Login_&_Register/SnackbarContext';
+import { SnackbarProvider } from './Context/SnackbarContext';
 import { ContextProvider } from './Context/ContextProvider';
+import { CartProvider } from './Context/CartProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -13,7 +14,9 @@ root.render(
     <BrowserRouter>
       <SnackbarProvider>
         <ContextProvider>
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </ContextProvider>
       </SnackbarProvider>
     </BrowserRouter>

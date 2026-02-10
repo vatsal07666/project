@@ -4,7 +4,7 @@ import { Box, useMediaQuery, useTheme } from "@mui/system";
 import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
-import { useSnackbar } from "./SnackbarContext";
+import { useSnackbar } from "../Context/SnackbarContext";
 import { useHistory } from "react-router-dom";
 
 const RegisterPage = () => {
@@ -24,20 +24,7 @@ const RegisterPage = () => {
 
     const token = "5wI8xsf3DqDSmYTX";
 
-    const getData = () => {
-        axios.get("https://generateapi.techsnack.online/api/register", {
-            headers: { Authorization: token }
-        })
-        .then((res) => {
-            console.log("/* Register Data */");
-            console.log("GET response: ", res.data);
-        })
-        .catch((err) => {
-            console.error("GET error: ", err);
-        })
-    }
-
-    const postData = (values) => {
+    const postData = (values, resetForm) => {
         const data = {username: values.username, email: values.email, password: values.password}
 
         axios.post("https://generateapi.techsnack.online/api/register", data, {
@@ -45,9 +32,11 @@ const RegisterPage = () => {
         })
         .then((res) => {
             console.log("/* Register Data */");
-            console.log("POST response: ", res.status);
             if(res.status === 200 || res.status === 204){
-                getData();
+                console.log("POST response: ", res.status);
+                resetForm();
+                history.push("/log-in");
+                ShowSnackbar("Account Created Successfully !", "success");
             }
         })
         .catch((err) => {
@@ -56,10 +45,7 @@ const RegisterPage = () => {
     }
 
     const handleSubmit = (values, { resetForm }) => {
-        postData(values);
-        resetForm();
-        ShowSnackbar("Account Created Successfully !", "success");
-        history.push("/log-in");
+        postData(values, resetForm);
     }
 
     return(

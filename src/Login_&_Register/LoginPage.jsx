@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Box, Button, Paper, Typography, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import * as Yup from 'yup';
-import { useSnackbar } from "./SnackbarContext";
+import { useSnackbar } from "../Context/SnackbarContext";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 const LoginPage = () => {
@@ -31,17 +31,29 @@ const LoginPage = () => {
         .then((res) => {
             console.log("/* Login Data */");
             console.log("POST response: ", res.data);
+           // Save auth token
+            localStorage.setItem("authToken", res.data.token);
+
+            // Save role
+            const role = res.data.role || 
+                (values.username === "admin" && values.password === "admin666" ? "admin" : "user");
+            localStorage.setItem("role", role);
+
+            ShowSnackbar("Login Successful!", "success");
+
+            // Redirect based on role
+            if (role === "admin") history.push("/admin");
+            else history.push("/");
         })
         .catch((err) => {
             console.error("POST error: ", err);
+            ShowSnackbar("Login Failed !", "error");
         })
     }
 
     const handleSubmit = (values, { resetForm }) => {
         postItem(values);
         resetForm();
-        history.push("/");
-        ShowSnackbar("Login Successful !", "success");
     }
 
     return(
@@ -67,8 +79,9 @@ const LoginPage = () => {
                             {errors.password && touched.password && <div style={{color: "#ff0000", marginTop: "5px"}}>{errors.password}</div>}
                             <br /><br />
 
-                            <Button type="submit" fullWidth size="large" variant="contained" sx={{
-                                    mt: 3, py: 1.3, background: "#1e293b", "&:hover": { background: "#0f172a" }
+                            <Button type="submit" fullWidth size="large" variant="contained" 
+                                sx={{ mt: 3, py: 1.3, background: "#1e293b", 
+                                    "&:hover": { background: "#0f172a" }
                                 }}
                             >
                                 Log In
