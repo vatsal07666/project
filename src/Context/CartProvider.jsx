@@ -19,7 +19,10 @@ export const CartProvider = ({ children }) => {
         setCart((prev) => {
             const exists = prev.find((item) => item._id === product._id);
             if (exists) {
-                return prev.map((item) => item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item)
+                setTimeout(() => {
+                    ShowSnackbar("Item is already in the Cart !", "info");
+                }, 0)
+                return prev;
             }
             return [...prev, {...product, quantity: 1}];
         })

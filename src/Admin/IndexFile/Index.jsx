@@ -139,11 +139,10 @@ export default function Index({children}) {
         if(prevPathRef.current !== location.pathname){
             if (isMobile && open) {
                 setOpen(false);
-                setIsDrawerOpen(false);
             }
             prevPathRef.current = location.pathname;
         }
-    }, [location.pathname, isMobile, open, setIsDrawerOpen]); // route change only
+    }, [location.pathname, isMobile, open]); // route change only
 
 
     const handleLogout = () => {
@@ -221,15 +220,12 @@ export default function Index({children}) {
                 </Toolbar>
             </AppBar>
 
-            {/* Desktop Drawer */}
-            {!isMobile && (
+            {/* Drawer */}
+            {!isMobile ? (
                 <DesktopDrawer variant="permanent" open={open}>
                     {DrawerContent}
                 </DesktopDrawer>
-            )}
-
-            {/* Mobile Drawer */}
-            {isMobile && (
+            ) : (
                 <Drawer variant="temporary" open={open} onClose={handleDrawerClose}
                     ModalProps={{ keepMounted: true }}
                     sx={{ '& .MuiDrawer-paper': { width: drawerWidth, height: '100vh' } }}
@@ -238,9 +234,13 @@ export default function Index({children}) {
                 </Drawer>
             )}
 
-            <Box component="main" 
-                sx={{ minHeight: "100vh", flexGrow: 1, pt: 10, pb: 3, px: {xs: 2, sm: 0},
-                    background: "#f7f7f7"
+            <Box component="main" sx={{ minHeight: "100vh", flexGrow: 1, pt: 10, pb: 3, px: { xs: 2, sm: 0 },
+                    background: "#f7f7f7",
+                    transition: theme.transitions.create(['margin', 'width'], {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.leavingScreen,
+                    }),
+                    overflowX: 'hidden',   // allow horizontal scroll when content overflows
                 }}
             >
                 <Container maxWidth="lg">

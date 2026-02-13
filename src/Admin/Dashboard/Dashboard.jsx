@@ -33,12 +33,12 @@ const Dashboard = () => {
                     <Typography variant="h4">Dashboard</Typography>
                 </Box>
 
-                <Grid container spacing={{ xs: 2, sm: 3, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                <Grid container spacing={{ xs: 2, sm: 3 }}>
                     {cards.map((item, index) => (
-                        <Grid size={{ xs: 12, sm: 4, md: 3 }} key={index} component={Link} to={item.path}
+                        <Grid size={{ xs: 12, sm: 4 }} key={index} component={Link} to={item.path}
                             sx={{textDecoration: "none"}}
                         >
-                            <Card sx={{ minWidth: "49%", border: 1, borderRadius: 2 }}>
+                            <Card sx={{ width: "100%", border: 1, borderRadius: 2 }}>
                                 <CardContent sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
                                     <IconButton component={Paper} sx={{ p: 1.5, mb: 1, color: "#fff", background: "#1e293b",
                                         transition: "0.3s ease-in-out",

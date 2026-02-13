@@ -1,6 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, Paper, Table, 
-    TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, InputBase, TablePagination, Typography, 
-    Card, CardContent, useTheme, useMediaQuery,
+    TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, InputBase, Typography, Card, CardContent, 
+    useTheme, useMediaQuery,
 } from "@mui/material";
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
@@ -29,10 +29,6 @@ const AddProduct = () => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-    /* Pagination state */
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const { ShowSnackbar } = useSnackbar();
 
@@ -186,16 +182,14 @@ const AddProduct = () => {
     const DesktopTable = () => {
         return(
             <TableContainer component={Paper} elevation={0} 
-                sx={{ width: '100%', maxWidth: 'calc(100vw - 180px)', // adjust to sidebar width
-                    overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: '0 auto',
-                    '&::-webkit-scrollbar': { height: '8px' },
+                sx={{ WebkitOverflowScrolling: 'touch', '&::-webkit-scrollbar': { height: '8px' },
                     '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
                     '&::-webkit-scrollbar-thumb': { backgroundColor: '#888', borderRadius: 4,
                         '&:hover': { backgroundColor: '#555' },
                     },
                 }}
             >
-                <Table sx={{ width: '100%', minWidth: 900 }}>
+                <Table>
                     <TableHead sx={{ background: "#1e293b" }}>
                         <TableRow>
                             {["#", "Product", "SKU", "Category", "Supplier", "Stock", "Cost", "Price", "Actions"]
@@ -208,18 +202,14 @@ const AddProduct = () => {
                     </TableHead>
 
                     <TableBody sx={{ "& .MuiTableRow-root": {"&:hover": {background: "#f0f0f0"}}, 
-                        "& .MuiTableCell-root": { fontSize: "16px", 
+                        "& .MuiTableCell-root": { fontSize: "16px", whiteSpace: "nowrap",
                             borderRight: "1px solid rgba(255, 255, 255, 0.1)",
-                            whiteSpace: "nowrap",
                         }
                     }}>
-                        {paginatedProducts.length > 0 ? (
-                            paginatedProducts.map((item, index) => (
+                        {filteredProduct.length > 0 ? (
+                            filteredProduct.map((item, index) => (
                                 <TableRow key={item._id ?? index}>
-                                    {/* <TableCell>{index + 1}</TableCell> */}
-                                    <TableCell align="center">
-                                        {page * rowsPerPage + index + 1}
-                                    </TableCell>
+                                    <TableCell>{index + 1}</TableCell>
                                     <TableCell>{item.productName}</TableCell>
                                     <TableCell>{item.sku}</TableCell>
                                     <TableCell>{item.category}</TableCell>
@@ -321,7 +311,7 @@ const AddProduct = () => {
 
     const MobileCards = () => (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2}}>
-            {paginatedProducts.map((item, index) => (
+            {filteredProduct.map((item, index) => (
                 <Card key={item._id ?? index}
                     sx={{ borderRadius: 3, boxShadow: 2, display: "flex", flexDirection: "column" }}
                 >
@@ -329,7 +319,7 @@ const AddProduct = () => {
                     <CardContent sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Typography fontWeight={600}> {item.productName} </Typography>
-                            <Typography color="text.secondary"> #{page * rowsPerPage + index + 1} </Typography>
+                            <Typography color="text.secondary"> #{index + 1} </Typography>
                         </Box>
 
                         <Divider sx={{ my: 1 }} />
@@ -350,14 +340,14 @@ const AddProduct = () => {
                     {/* ACTIONS — ALWAYS AT BOTTOM */}
                     <Box sx={{ display: "flex", justifyContent: "center", gap: 1, p: 2, mt: "auto" }}>
                         <Button
-                            sx={{ background: "#fff", color: "#ef4444", border: 1 }}
+                            sx={{ background: "#fff", color: "#ef4444", border: 1, whiteSpace: "nowrap" }}
                             onClick={() => setDailogOpen(true)}
                         >
                             <RiDeleteBin6Line />&nbsp; Delete
                         </Button>
 
                         <Button
-                            sx={{ background: "#fff", color: "#2563eb", border: 1 }}
+                            sx={{ background: "#fff", color: "#2563eb", border: 1, whiteSpace: "nowrap" }}
                             onClick={() => handleEdit(item)}
                         >
                             <FaEdit />&nbsp; Edit
@@ -368,19 +358,10 @@ const AddProduct = () => {
         </Box>
     );
 
-    /* ---------------- Search + Pagination ---------------- */
-    const filteredProduct = products.filter((p) =>
-        p.productName.toLowerCase().includes(searchItem.toLowerCase())
+    /* ---------------- Search ---------------- */
+    const filteredProduct = products.filter(
+        p => (p.productName ?? '').toLowerCase().includes((searchItem ?? '').toLowerCase())
     );
-
-    const paginatedProducts = filteredProduct.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-    );
-
-    useEffect(() => {
-        setPage(0);
-    }, [searchItem]);
 
     return(
         <Box component={Paper} sx={{p:3, borderRadius: 2 }}>
@@ -522,7 +503,7 @@ const AddProduct = () => {
             {/* Product Table */}
             <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", my: 2}}>
                 {/* Search Field */}
-                <Box sx={{ position: 'relative', border: 1, borderRadius: 2, width: { xs: "100%", sm: "60%", md: "35%" }, 
+                <Box sx={{ position: 'relative', border: 1, borderRadius: 2, width: { xs: "100%", sm: "60%", md: "50%" }, 
                         py: 0.5, my: 2
                     }}
                 >
@@ -535,20 +516,6 @@ const AddProduct = () => {
             </Box>
 
             {isMobile ? <MobileCards /> : <DesktopTable />}
-
-            {/* PAGINATION */}
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                component="div"
-                count={filteredProduct.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => {
-                    setRowsPerPage(parseInt(e.target.value, 10));
-                    setPage(0);
-                }}
-            />
         </Box>
     )
 }

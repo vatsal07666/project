@@ -1,8 +1,6 @@
-import { Box, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, InputBase, Paper, 
-    Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip, 
-    Typography, 
-    useMediaQuery, 
-    useTheme
+import { Box, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, 
+    InputBase, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, 
+    useMediaQuery, useTheme
 } from "@mui/material";
 import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
@@ -31,10 +29,6 @@ const AddCategory = () => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-    /* Pagination state */
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const { ShowSnackbar } = useSnackbar();
 
@@ -182,16 +176,14 @@ const AddCategory = () => {
     const DesktopTable = () => {
         return(
             <TableContainer component={Paper} elevation={0} 
-                sx={{ width: '100%', maxWidth: 'calc(100vw - 180px)', // adjust to sidebar width
-                    overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: '0 auto',
-                    '&::-webkit-scrollbar': { height: '8px' },
+                sx={{ WebkitOverflowScrolling: 'touch', '&::-webkit-scrollbar': { height: '8px' },
                     '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
                     '&::-webkit-scrollbar-thumb': { backgroundColor: '#888', borderRadius: 4,
                         '&:hover': { backgroundColor: '#555' },
                     },
                 }}
             >
-                <Table sx={{width: "100%", minWidth: 900}}>
+                <Table>
                     <TableHead sx={{background: "#1e293b"}}>
                         <TableRow>
                             {["#", "Category", "Description", "Status", "Actions"]
@@ -206,11 +198,10 @@ const AddCategory = () => {
                     <TableBody sx={{ "& .MuiTableRow-root": {"&:hover": {background: "#f0f0f0"}}, 
                         "& .MuiTableCell-root": { fontSize: "16px", 
                             borderRight: "1px solid rgba(255, 255, 255, 0.1)",
-                            // whiteSpace: "nowrap",
                         }
                     }}>
-                        {paginatedCategories.length > 0 ? (
-                            paginatedCategories.map((item, index) => (
+                        {filteredCategory.length > 0 ? (
+                            filteredCategory.map((item, index) => (
                                 <TableRow key={item._id ?? index}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell sx={{whiteSpace: "nowrap"}}>{item.categoryName}</TableCell>
@@ -303,7 +294,7 @@ const AddCategory = () => {
 
     const MobileCards = () => (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2}}>
-            {paginatedCategories.map((item, index) => (
+            {filteredCategory.map((item, index) => (
                 <Card key={item._id ?? index}
                     sx={{ borderRadius: 3, boxShadow: 2, display: "flex", flexDirection: "column" }}
                 >
@@ -311,7 +302,7 @@ const AddCategory = () => {
                     <CardContent sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Typography fontWeight={600}> {item.categoryName} </Typography>
-                            <Typography color="text.secondary"> #{page * rowsPerPage + index + 1} </Typography>
+                            <Typography color="text.secondary"> #{index + 1} </Typography>
                         </Box>
 
                         <Divider sx={{ my: 1 }} />
@@ -331,14 +322,14 @@ const AddCategory = () => {
                     {/* ACTIONS — ALWAYS AT BOTTOM */}
                     <Box sx={{ display: "flex", justifyContent: "center", gap: 1, p: 2, mt: "auto" }}>
                         <Button
-                            sx={{ background: "#fff", color: "#ef4444", border: 1 }}
+                            sx={{ background: "#fff", color: "#ef4444", border: 1, whiteSpace: "nowrap" }}
                             onClick={() => setDailogOpen(true)}
                         >
                             <RiDeleteBin6Line />&nbsp; Delete
                         </Button>
 
                         <Button
-                            sx={{ background: "#fff", color: "#2563eb", border: 1 }}
+                            sx={{ background: "#fff", color: "#2563eb", border: 1, whiteSpace: "nowrap" }}
                             onClick={() => handleEdit(item)}
                         >
                             <FaEdit />&nbsp; Edit
@@ -349,19 +340,10 @@ const AddCategory = () => {
         </Box>
     );
 
-    /* ---------------- Search + Pagination ---------------- */
-    const filteredCategory = categories.filter((p) =>
-        p.categoryName.toLowerCase().includes(searchItem.toLowerCase())
+    /* ---------------- Search ---------------- */
+    const filteredCategory = categories.filter(
+        p => (p.categoryName ?? '').toLowerCase().includes((searchItem ?? '').toLowerCase())
     );
-
-    const paginatedCategories = filteredCategory.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-    );
-
-    useEffect(() => {
-        setPage(0);
-    }, [searchItem]);
 
     return(
         <Box component={Paper} sx={{p:3, borderRadius: 2}}>
@@ -470,7 +452,7 @@ const AddCategory = () => {
             {/* Category Table */}
             <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", my: 2}}>    
                 {/* Search Field */}
-                <Box sx={{ position: 'relative', border: 1, borderRadius: 2, width: { xs: "100%", sm: "60%", md: "35%" }, 
+                <Box sx={{ position: 'relative', border: 1, borderRadius: 2, width: { xs: "100%", sm: "60%", md: "50%" }, 
                         py: 0.5, my: 2
                     }}
                 >
@@ -483,20 +465,6 @@ const AddCategory = () => {
             </Box>
 
             {isMobile ? <MobileCards /> : <DesktopTable />}
-
-            {/* PAGINATION */}
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                component="div"
-                count={filteredCategory.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => {
-                    setRowsPerPage(parseInt(e.target.value, 10));
-                    setPage(0);
-                }}
-            />
         </Box>
     )
 }

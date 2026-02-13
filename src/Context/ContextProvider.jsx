@@ -8,8 +8,6 @@ export const ContextProvider = ({children}) => {
     const [products, setProducts] = useState([]);
     const suppliers = ["Global Electronics Ltd", "Home Supply", "Fashion World Inc", "SportsPro Equipment"];
 
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
     // Tokens
     const productToken = "w4AkMdTjMm7CLvTY";
     const categoryToken = "y5japrtJDM9NkJjU";
@@ -38,9 +36,7 @@ export const ContextProvider = ({children}) => {
     }, [])
 
     return(
-        <DataContext.Provider value={{ products, setProducts, categories, setCategories, suppliers, isDrawerOpen,
-            setIsDrawerOpen
-        }}>
+        <DataContext.Provider value={{ products, setProducts, categories, setCategories, suppliers }}>
             {children}
         </DataContext.Provider>
     )

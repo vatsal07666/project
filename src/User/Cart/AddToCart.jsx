@@ -19,8 +19,8 @@ const Cart = () => {
     const handleCheckout = () => {
         LoadRazorpay().then((loaded) => {
             if (!loaded) {
-            alert("Razorpay SDK failed to load");
-            return;
+                alert("Razorpay SDK failed to load");
+                return;
             }
 
             const options = {
